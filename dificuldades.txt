@@ -1,0 +1,3 @@
+1. Um problema que estávamos a cometer inicialmente é que, o mesmo cliente aparece várias vezes. Quando vamos a fazer um histograma da Distribuição da Idade dos Clientes, temos de ter em conta os duplicados no client_id
+2. O pie chart foi desafiante, por burrice nossa, no sentido em que a coluna que dizia se tinha filhos ou não, tinha valores não numéricos e queríamos apresentar as percentagens no Pie Chart. Mas foi facilmente resolvido com .value_counts(normalize=True)
+3. A logística dos filtros foi intimidante ao início, mas depois acabou por ser super fácil de aplicar.
