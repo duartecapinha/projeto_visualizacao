@@ -14,15 +14,6 @@ st.title("📋 Perfil dos Clientes")
 df_full = pd.read_csv("data/dataset.csv")
 df = df_full.copy()  # Remover duplicados para análises corretas
 
-# Obter lista de cidades únicas (ordenadas)
-cidades = sorted(df["client_city"].unique())
-
-# SelectBox para escolher a cidade
-cidade_selecionada = st.selectbox("Seleciona uma cidade:", ["Todas"] + cidades)
-if cidade_selecionada != "Todas":
-    df = df[df["client_city"] == cidade_selecionada]
-
-total_clients = df['client_id'].nunique()
 st.markdown(
     f"""
     <div style='
@@ -36,7 +27,7 @@ st.markdown(
         border-radius: 8px;
         margin-bottom: 20px;
     '>
-        <div>Total de Clientes: {total_clients}</div>
+        <div>Total de Clientes: {df['client_id'].nunique()}</div>
         <div>Idade Média: {df['client_age'].mean():.1f}</div>
         <div>Salário Médio: {df['client_salary'].mean():,.1f}k €</div>
     </div>
@@ -47,14 +38,26 @@ st.markdown(
 with st.container():
     client_num_per_city_bar(df_full)
 
-with st.container():
-    client_with_kids_or_not_pie(df)
-    
-with st.container():
-    client_fam_num_bar(df)
+st.markdown("---")
+
+# Obter lista de cidades únicas (ordenadas)
+cidades = sorted(df["client_city"].unique())
+
+# SelectBox para escolher a cidade
+cidade_selecionada = st.selectbox("Seleciona uma cidade:", ["Todas"] + cidades)
+if cidade_selecionada != "Todas":
+    df = df[df["client_city"] == cidade_selecionada]
 
 col1, col2 = st.columns(2)
 with col1:
     client_age_hist(df)
 with col2:
     client_salary_hist(df)
+    
+with st.container():
+    client_with_kids_or_not_pie(df)
+    
+with st.container():
+    client_fam_num_bar(df)
+
+

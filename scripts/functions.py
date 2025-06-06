@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+import pandas as pd
 
 # PERFIL DOS CLIENTES
 
@@ -185,3 +186,95 @@ def depart_sales_num_bar(df):
     )
 
     st.plotly_chart(fig_depart, use_container_width=True)
+
+def sales_evolution_by_store(df):
+    #Gráfico de Linha com a evolução das vendas ao longo do tempo por loja
+    st.subheader("Evolução das Vendas ao Longo do Tempo por Loja")
+
+    df['transaction_timestamp'] = pd.to_datetime(df['transaction_timestamp'])
+
+    # Obter lista de lojas únicas (ordenadas)
+    lojas = sorted(df["store_id"].unique())
+
+    # SelectBox para escolher a loja
+    loja_selecionada = st.selectbox("Seleciona uma loja:", ["Todas"] + lojas, index=1)
+
+    # Filtrar o DataFrame consoante a loja selecionada
+    if loja_selecionada != "Todas":
+        df = df[df["store_id"] == loja_selecionada]
+    
+    sales_by_day_store = (
+        df.groupby([df['transaction_timestamp'].dt.date, 'store_id'])
+        .size()
+        .reset_index(name='num_sales')
+    )
+
+    fig = px.line(
+        sales_by_day_store,
+        x='transaction_timestamp',
+        y='num_sales',
+        color='store_id',
+        markers=True,
+        title=' ',
+        color_discrete_sequence=px.colors.qualitative.Plotly
+    )
+
+    fig.update_layout(
+        xaxis_title="Data",
+        yaxis_title="Número de Vendas",
+        template="plotly_white",
+        title_font_size=20
+    )
+
+    fig.update_traces(
+        hovertemplate="Data: %{x}<br>Loja: %{fullData.name}<br>Vendas: %{y}"
+    )
+
+
+    st.plotly_chart(fig, use_container_width=True)
+
+def top_product_categories(df):
+    st.subheader("Top Categorias de Produto Mais Vendidas")
+
+    # Obter listas únicas e ordenadas
+    lojas = sorted(df["store_id"].unique())
+    departamentos = sorted(df["product_department"].unique())
+
+    # SelectBoxes para filtrar
+    col1, col2 = st.columns(2)
+    with col1:
+        loja_selecionada = st.selectbox("Seleciona uma loja:", ["Todas"] + lojas)
+    with col2:
+        departamento_selecionado = st.selectbox("Seleciona um departamento:", ["Todos"] + departamentos, index=3)
+
+    # Aplicar filtros
+    if loja_selecionada != "Todas":
+        df = df[df["store_id"] == loja_selecionada]
+
+    if departamento_selecionado != "Todos":
+        df = df[df["product_department"] == departamento_selecionado]
+    
+    category_sales = (
+        df.groupby(['product_department', 'product_category'])
+        .size()
+        .reset_index(name='num_sales')
+        .sort_values('num_sales', ascending=False)
+    )
+
+    fig = px.bar(
+        category_sales,
+        x='product_category',
+        y='num_sales',
+        color='product_department',
+        title=' ',
+        labels={'num_sales': 'Número de Vendas', 'product_category': 'Categoria'},
+        color_discrete_sequence=px.colors.qualitative.Set3
+    )
+
+    fig.update_layout(
+        xaxis_tickangle=-45,
+        template='plotly_white'
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
