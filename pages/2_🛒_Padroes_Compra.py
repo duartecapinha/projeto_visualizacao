@@ -4,7 +4,9 @@ from scripts.functions import (
     depart_sales_num_bar,
     sales_evolution_by_store,
     top_product_categories,
-    
+    top_selling_store,
+    product_share_by_category,
+    vendas_boxplot_promocao,
 )
 
 st.set_page_config(page_title="Padrões de Compra", layout="wide")
@@ -49,3 +51,12 @@ with st.container():
 
 with st.container():
     top_product_categories(df)
+
+with st.container():
+    top_selling_store(df)
+
+with st.container():
+    product_share_by_category(df)
+
+with st.container():
+    vendas_boxplot_promocao(df)
