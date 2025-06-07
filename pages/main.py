@@ -18,7 +18,9 @@ from scripts.functions import (
 )
 
 # Configuração da página
-st.set_page_config(page_title="Dashboard Consolidado", layout="wide")
+st.set_page_config(page_title="Dashboard MCID", layout="wide")
+
+# Lê dados
 df = pd.read_csv("data/dataset.csv")
 df["transaction_timestamp"] = pd.to_datetime(df["transaction_timestamp"])
 
@@ -27,33 +29,30 @@ total_faturas = f"{df['basket_id'].nunique():,}"
 total_produtos = f"{df['quantity'].sum():,}"
 total_promo = df[df["is_promo_day"] == 1]["transaction_timestamp"].dt.date.nunique()
 
-# CSS dos botões
+# ——— CSS para botões cheios ———
 st.markdown("""
     <style>
-        .menu-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 0px;
-            margin-bottom: 20px;
-        }
-        .menu-button {
+        /* Faz todos os st.button preencherem 100% do container pai */
+        div.stButton > button {
+            width: 100% !important;
             padding: 10px 30px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #1e1e80, #6a1b9a);
-            font-weight: bold;
             font-size: 22px;
-            cursor: pointer;
-            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #1e1e80, #6a1b9a) !important;
+            color: white !important;
             box-shadow: 0 0 10px rgba(106, 27, 154, 0.3);
             transition: all 0.3s ease-in-out;
         }
-        .menu-button:hover {
+        div.stButton > button:hover {
             transform: scale(1.03);
             box-shadow: 0 0 15px rgba(106, 27, 154, 0.5);
         }
 
+        /* Pequeno espaço abaixo dos botões */
+        .stButton {
+            margin-bottom: 0px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -76,7 +75,7 @@ if "tab" not in st.session_state:
 if st.session_state["tab"] == "clientes":
     st.markdown("<h4>👥 Perfil dos Clientes</h4>", unsafe_allow_html=True)
 
-    # Botões e gráfico lado a lado
+    # Botões laterais e gráfico
     col_graph, col_menu = st.columns([5, 2], gap="large")
     with col_menu:
         st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
@@ -109,7 +108,6 @@ if st.session_state["tab"] == "clientes":
 
     # KPIs abaixo
     st.markdown("""<hr style='margin-top: 10px; margin-bottom: 5px;'>""", unsafe_allow_html=True)
-
     st.markdown(f"""
         <style>
             .kpi-container {{
@@ -155,7 +153,6 @@ if st.session_state["tab"] == "clientes":
         </div>
     """, unsafe_allow_html=True)
 
-
 # ============================
 # === Padrões de Compra =====
 # ============================
@@ -189,7 +186,6 @@ elif st.session_state["tab"] == "compras":
             vendas_boxplot_promocao(df)
 
     st.markdown("""<hr style='margin-top: 10px; margin-bottom: 5px;'>""", unsafe_allow_html=True)
-
     st.markdown(f"""
         <style>
             .kpi-container {{
@@ -234,5 +230,3 @@ elif st.session_state["tab"] == "compras":
             </div>
         </div>
     """, unsafe_allow_html=True)
-
-

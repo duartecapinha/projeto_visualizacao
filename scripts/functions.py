@@ -216,7 +216,7 @@ def sales_evolution_by_store(df):
         color='store_id',
         markers=True,
         title=' ',
-        color_discrete_sequence=px.colors.qualitative.Plotly
+        color_discrete_sequence=["#00838F"],
     )
 
     fig.update_layout(
@@ -368,7 +368,7 @@ def product_share_by_category(df):
         orientation="h",
         text="num_sales",
         color="product_category",
-        color_discrete_sequence=px.colors.qualitative.Set3,
+        color_discrete_sequence=["#00838F"],
         labels={"num_sales": "Número de Vendas", "product_category": "Categoria"},
         title=f"Top {top_n} Categorias de Vendas no Departamento '{departamento_selecionado}'"
     )
