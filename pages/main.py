@@ -34,22 +34,26 @@ st.markdown("""
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin-top: 10px;
+            margin-top: 0px;
             margin-bottom: 20px;
         }
         .menu-button {
             padding: 10px 30px;
-            border: 2px solid red;
-            border-radius: 6px;
-            background-color: #fff;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #1e1e80, #6a1b9a);
             font-weight: bold;
-            font-size: 18px;
+            font-size: 22px;
             cursor: pointer;
-            color: black;
+            color: white;
+            box-shadow: 0 0 10px rgba(106, 27, 154, 0.3);
+            transition: all 0.3s ease-in-out;
         }
         .menu-button:hover {
-            background-color: #ffeaea;
+            transform: scale(1.03);
+            box-shadow: 0 0 15px rgba(106, 27, 154, 0.5);
         }
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -70,7 +74,7 @@ if "tab" not in st.session_state:
 # === Perfil dos Clientes ===
 # ============================
 if st.session_state["tab"] == "clientes":
-    st.title("👥 Perfil dos Clientes")
+    st.markdown("<h4>👥 Perfil dos Clientes</h4>", unsafe_allow_html=True)
 
     # Botões e gráfico lado a lado
     col_graph, col_menu = st.columns([5, 2], gap="large")
@@ -156,7 +160,7 @@ if st.session_state["tab"] == "clientes":
 # === Padrões de Compra =====
 # ============================
 elif st.session_state["tab"] == "compras":
-    st.title("🛒 Padrões de Compra")
+    st.markdown("<h4>🛒 Padrões de Compra</h4>", unsafe_allow_html=True)
 
     col_graph, col_menu = st.columns([5, 2], gap="large")
     with col_menu:
@@ -230,3 +234,5 @@ elif st.session_state["tab"] == "compras":
             </div>
         </div>
     """, unsafe_allow_html=True)
+
+
