@@ -281,27 +281,30 @@ def top_product_categories(df):
 
 
 def top_selling_store(df):
-#Gráfico de Barras com as lojas com mais venda
+    # Gráfico de Barras com as lojas com mais venda
     st.subheader("Loja com Mais Vendas")
 
+    # Criar cópia auxiliar do DataFrame
+    df_aux = df.copy()
+
     # Converter store_id para string e adicionar prefixo "Loja"
-    df["store_id"] = df["store_id"].astype(str)
-    df["store_id"] = "Loja " + df["store_id"]
+    df_aux["store_id"] = df_aux["store_id"].astype(str)
+    df_aux["store_id"] = "Loja " + df_aux["store_id"]
 
     # Definir ordenação por nome
-    ordem_lojas = sorted(df["store_id"].unique(), key=lambda x: int(x.split(" ")[1]))  # Loja 1, Loja 2, Loja 3
-    df["store_id"] = pd.Categorical(df["store_id"], categories=ordem_lojas, ordered=True)
+    ordem_lojas = sorted(df_aux["store_id"].unique(), key=lambda x: int(x.split(" ")[1]))
+    df_aux["store_id"] = pd.Categorical(df_aux["store_id"], categories=ordem_lojas, ordered=True)
 
     # Selectbox de filtro de departamento
-    departamentos = sorted(df["product_department"].unique())
+    departamentos = sorted(df_aux["product_department"].unique())
     departamento_selecionado = st.selectbox("Seleciona um departamento:", ["Todos"] + departamentos)
 
     if departamento_selecionado != "Todos":
-        df = df[df["product_department"] == departamento_selecionado]
+        df_aux = df_aux[df_aux["product_department"] == departamento_selecionado]
 
-    # Contagem de vendas por loja (sem reordenar)
+    # Contagem de vendas por loja
     store_sales = (
-        df.groupby("store_id")
+        df_aux.groupby("store_id")
         .size()
         .reset_index(name="num_sales")
     )
@@ -329,6 +332,7 @@ def top_selling_store(df):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
 
 
 
@@ -386,28 +390,42 @@ def product_share_by_category(df):
 
 
 
+
 def vendas_boxplot_promocao(df):
     st.subheader("Distribuição Diária das Vendas com e sem Promoções (Loja 1)")
 
-    # Garantir que estamos a trabalhar com a loja 1 (numérico)
-    df_loja1 = df[df["store_id"] == 1].copy()
+    # Criar cópia auxiliar para preservar df original
+    df_aux = df.copy()
 
-    # Extrair apenas a data (sem horas) do timestamp
-    df_loja1["date"] = pd.to_datetime(df_loja1["transaction_timestamp"]).dt.date
+    # Garantir tipos corretos
+    df_aux["store_id"] = pd.to_numeric(df_aux["store_id"], errors="coerce")
+    df_aux["is_promo_day"] = df_aux["is_promo_day"].map({1: True, 0: False, "True": True, "False": False}).astype(bool)
+    df_aux["transaction_timestamp"] = pd.to_datetime(df_aux["transaction_timestamp"], errors="coerce")
 
-    # Agrupar por data e se é promo ou não
+    # Filtrar Loja 1
+    df_loja1 = df_aux[df_aux["store_id"] == 1].copy()
+    if df_loja1.empty:
+        return  # Não mostra nada se não houver dados
+
+    # Extrair data
+    df_loja1["date"] = df_loja1["transaction_timestamp"].dt.date
+
+    # Agrupar por data e tipo de dia
     vendas_diarias = (
         df_loja1.groupby(["date", "is_promo_day"])["sales_value"]
         .sum()
         .reset_index()
     )
+    if vendas_diarias.empty:
+        return  # Não mostra gráfico se não houver agregações
 
-    # Mapear valores booleanos para nomes legíveis
+    # Mapeamento para nomes legíveis
     vendas_diarias["Tipo de Dia"] = vendas_diarias["is_promo_day"].map({
         True: "Com Promoção",
         False: "Sem Promoção"
     })
 
+    # Gráfico boxplot
     fig = px.box(
         vendas_diarias,
         x="Tipo de Dia",
@@ -415,7 +433,7 @@ def vendas_boxplot_promocao(df):
         color="Tipo de Dia",
         title="Distribuição Diária das Vendas - Loja 1",
         color_discrete_sequence=["#00838F", "#F25C54"],
-        points="all"  # mostra os pontos individuais
+        points="all"
     )
 
     fig.update_layout(
@@ -426,3 +444,5 @@ def vendas_boxplot_promocao(df):
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+
