@@ -36,7 +36,7 @@ with col2:
 st.markdown("---")
 
 if st.button("👉 Começar a Explorar"):
-    st.switch_page("pages/1_📋_Perfil_Clientes.py")
+    st.switch_page("pages/main.py")
 
 st.markdown("""
 <div style='text-align: center; color: grey; font-size: 12px; margin-top: 50px;'>
