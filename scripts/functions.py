@@ -2,6 +2,9 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 
+import plotly.graph_objects as go
+import numpy as np
+
 # PERFIL DOS CLIENTES
 
 def client_age_hist(df):
@@ -418,3 +421,69 @@ def vendas_boxplot_promocao(df):
     st.plotly_chart(fig, use_container_width=True)
 
 
+
+def produtos_com_mais_cupons(df, top_n: int = 10):
+    """
+    Mostra os produtos onde se aplicam mais 'cupões',
+    usando como proxy qualquer desconto (discount_value > 0),
+    e permite filtrar por loja.
+    """
+    st.subheader("Top Produtos com Mais Cupões Aplicados")
+
+    # ——— 1) Filtro por departamento ———
+    departamentos = sorted(df["product_department"].astype(str).unique())
+    depatamento_selecionado = st.selectbox("Seleciona um Departamento:", ["Todos"] + departamentos)
+    if depatamento_selecionado != "Todos":
+        df = df[df["product_department"].astype(str) == depatamento_selecionado]
+
+
+    # ——— 2) Detecta coluna de cupões ou usa discount_value ———
+    possíveis = [c for c in df.columns if any(x in c.lower() for x in ("coupon", "voucher"))]
+    if possíveis:
+        cupao_col = possíveis[0]
+        df_cupons = df[df[cupao_col].notna()].copy()
+    elif "discount_value" in df.columns:
+        cupao_col = "discount_value"
+        df_cupons = df[df["discount_value"] > 0].copy()
+        st.info("ℹ️ A usar `discount_value > 0` como proxy para cupões.")
+    else:
+        st.error("❌ Não encontrei colunas de cupões nem de desconto no dataset.")
+        return
+
+    if df_cupons.empty:
+        st.info("ℹ️ Não existem registos com cupões/descontos aplicados para esta loja.")
+        return
+
+    # ——— 3) Conta quantas aplicações por categoria de produto ———
+    cupons_por_produto = (
+        df_cupons
+        .groupby("product_category")
+        .size()
+        .reset_index(name="num_cupons")
+    )
+
+    # ——— 4) Junta nomes de produto se existirem ———
+    if "product_name" in df_cupons.columns:
+        nomes = df_cupons[["product_category", "product_name"]].drop_duplicates()
+        cupons_por_produto = cupons_por_produto.merge(nomes, on="product_category", how="left")
+        label = "product_name"
+    else:
+        cupons_por_produto["product_name"] = cupons_por_produto["product_category"].astype(str)
+        label = "product_name"
+
+    # ——— 5) Top N e gráfico ———
+    top = cupons_por_produto.sort_values("num_cupons", ascending=False).head(top_n)
+    fig = px.bar(
+        top.sort_values("num_cupons", ascending=True),
+        x="num_cupons",
+        y=label,
+        orientation="h",
+        text="num_cupons",
+        color_discrete_sequence=["#00838F"],
+        labels={"num_cupons": "Número de Cupões", label: "Produto"},
+        title=f"Top {top_n} Produtos com Mais Cupões"
+    )
+    fig.update_traces(textposition="outside", marker_line_color="black", marker_line_width=0.5)
+    fig.update_layout(template="plotly_white", xaxis_title="Número de Cupões", yaxis_title="")
+
+    st.plotly_chart(fig, use_container_width=True)

@@ -14,7 +14,9 @@ from scripts.functions import (
     top_selling_store,
     product_share_by_category,
     vendas_boxplot_promocao,
+    produtos_com_mais_cupons,
 )
+
 
 # Configuração da página
 st.set_page_config(page_title="Dashboard MCID", layout="wide")
@@ -83,7 +85,7 @@ if st.session_state["tab"] == "clientes":
             "Distribuição por Idade",
             "Distribuição por Salário",
             "Com/Sem Filhos",
-            "Nº Elementos por Família"
+            "Nº Elementos por Família",
         ], format_func=lambda x: f"📊 {x}", label_visibility="collapsed")
 
     with col_graph:
@@ -166,7 +168,8 @@ elif st.session_state["tab"] == "compras":
             "Loja com Mais Vendas",
             "Vendas por Departamento",
             "Vendas das Categorias por Departamento",
-            "Promoções: Loja 1"
+            "Promoções: Loja 1",
+            "Produtos com Mais Cupões"
         ], format_func=lambda x: f"📊 {x}", label_visibility="collapsed")
 
     with col_graph:
@@ -180,6 +183,8 @@ elif st.session_state["tab"] == "compras":
             product_share_by_category(df)
         elif selected == "Promoções: Loja 1":
             vendas_boxplot_promocao(df)
+        elif selected == "Produtos com Mais Cupões":
+            produtos_com_mais_cupons(df)
 
     st.markdown("""<hr style='margin-top: 10px; margin-bottom: 5px;'>""", unsafe_allow_html=True)
     st.markdown(f"""
