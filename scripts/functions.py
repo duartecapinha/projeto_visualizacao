@@ -423,10 +423,7 @@ def vendas_boxplot_promocao(df):
 
 
 def salary_vs_avg_spent(df):
-    """
-    Scatter plot de Salário vs Preço Médio Gasto por Cliente,
-    com marcadores semi-transparentes e linha de tendência opaca.
-    """
+    # Gráfico de Dispersão com Salário vs Preço Médio Gasto por Cliente
     st.subheader("Salário vs Preço Médio Gasto por Cliente")
 
     # 1) Agrupa por cliente
@@ -447,7 +444,7 @@ def salary_vs_avg_spent(df):
         client_stats,
         x="client_salary",
         y="avg_spent",
-        opacity=0.6,  # marcadores semi-transparentes
+        opacity=0.5,
         labels={
             "client_salary": "Salário (€k)",
             "avg_spent": "Preço Médio Gasto (€)"
@@ -471,7 +468,7 @@ def salary_vs_avg_spent(df):
                 y=y_line,
                 mode="lines",
                 line=dict(dash="dash", color="red"),
-                opacity=0.8,  # linha de tendência leve transparente
+                opacity=0.8,
                 name="Tendência"
             )
         )
@@ -479,7 +476,7 @@ def salary_vs_avg_spent(df):
     fig.update_layout(
         template="plotly_white",
         xaxis_title="Salário",
-        yaxis_title="Preço Médio Gasto por Cesta",
+        yaxis_title="Preço Médio Gasto",
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)
     )
 
@@ -487,16 +484,21 @@ def salary_vs_avg_spent(df):
 
 
 def produtos_com_mais_cupons(df, top_n: int = 10):
-    """
-    Mostra os produtos onde se aplicam mais 'cupões',
-    usando como proxy qualquer desconto (discount_value > 0),
-    e permite filtrar por departamento.
-    """
+    # Gráfico de Barras com os produtos com mais cupões aplicados
     st.subheader("Top Produtos com Mais Cupões Aplicados")
 
-    # ——— 1) Filtro por departamento ———
-    departamentos = sorted(df["product_department"].astype(str).unique())
-    departamento_selecionado = st.selectbox("Seleciona um Departamento:", ["Todos"] + departamentos)
+    # ——— 1) Filtros lado a lado ———
+    col1, col2 = st.columns(2)
+
+    # Filtro por departamento
+    with col1:
+        departamentos = sorted(df["product_department"].astype(str).unique())
+        departamento_selecionado = st.selectbox("Seleciona um Departamento:", ["Todos"] + departamentos)
+
+    # Filtro por número de produtos
+    with col2:
+        top_n = st.selectbox("Número de Produtos a Mostrar:", [5, 10, 15, 20], index=[5, 10, 15, 20].index(top_n))
+
     if departamento_selecionado != "Todos":
         df = df[df["product_department"].astype(str) == departamento_selecionado]
 
@@ -508,7 +510,6 @@ def produtos_com_mais_cupons(df, top_n: int = 10):
     elif "discount_value" in df.columns:
         cupao_col = "discount_value"
         df_cupons = df[df["discount_value"] > 0].copy()
-        st.info("ℹ️ A usar `discount_value > 0` como proxy para cupões.")
     else:
         st.error("❌ Não encontrei colunas de cupões nem de desconto no dataset.")
         return
