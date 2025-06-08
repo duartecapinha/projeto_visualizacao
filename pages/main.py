@@ -7,6 +7,7 @@ from scripts.functions import (
     client_with_kids_or_not_pie,
     client_salary_hist,
     client_num_per_city_bar,
+    salary_vs_avg_spent,
 
     # PADRÕES DE COMPRA
     depart_sales_num_bar,
@@ -86,6 +87,7 @@ if st.session_state["tab"] == "clientes":
             "Distribuição por Salário",
             "Com/Sem Filhos",
             "Nº Elementos por Família",
+            "Salário vs Preço Médio Gasto",
         ], format_func=lambda x: f"📊 {x}", label_visibility="collapsed")
 
     with col_graph:
@@ -106,6 +108,8 @@ if st.session_state["tab"] == "clientes":
             client_with_kids_or_not_pie(df_clientes)
         elif selected == "Nº Elementos por Família":
             client_fam_num_bar(df_clientes)
+        elif selected == "Salário vs Preço Médio Gasto":
+            salary_vs_avg_spent(df_clientes)
 
     # KPIs abaixo
     st.markdown("""<hr style='margin-top: 10px; margin-bottom: 5px;'>""", unsafe_allow_html=True)

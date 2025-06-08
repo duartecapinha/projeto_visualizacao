@@ -422,20 +422,83 @@ def vendas_boxplot_promocao(df):
 
 
 
+def salary_vs_avg_spent(df):
+    """
+    Scatter plot de Salário vs Preço Médio Gasto por Cliente,
+    com marcadores semi-transparentes e linha de tendência opaca.
+    """
+    st.subheader("Salário vs Preço Médio Gasto por Cliente")
+
+    # 1) Agrupa por cliente
+    client_stats = (
+        df
+        .groupby("client_id")
+        .agg(
+            client_salary=("client_salary", "first"),
+            total_spent=("sales_value", "sum"),
+            baskets=("basket_id", "nunique")
+        )
+        .reset_index()
+    )
+    client_stats["avg_spent"] = client_stats["total_spent"] / client_stats["baskets"]
+
+    # 2) Scatter com opacidade nos marcadores
+    fig = px.scatter(
+        client_stats,
+        x="client_salary",
+        y="avg_spent",
+        opacity=0.6,  # marcadores semi-transparentes
+        labels={
+            "client_salary": "Salário (€k)",
+            "avg_spent": "Preço Médio Gasto (€)"
+        },
+        title=" "
+    )
+    fig.update_traces(
+        hovertemplate="Salário: %{x}k<br>Preço Médio: €%{y:.2f}"
+    )
+
+    # 3) Ajuste linear com numpy.polyfit
+    x = client_stats["client_salary"].to_numpy()
+    y = client_stats["avg_spent"].to_numpy()
+    if len(x) > 1:
+        m, b = np.polyfit(x, y, 1)
+        x_line = np.array([x.min(), x.max()])
+        y_line = m * x_line + b
+        fig.add_trace(
+            go.Scatter(
+                x=x_line,
+                y=y_line,
+                mode="lines",
+                line=dict(dash="dash", color="red"),
+                opacity=0.8,  # linha de tendência leve transparente
+                name="Tendência"
+            )
+        )
+
+    fig.update_layout(
+        template="plotly_white",
+        xaxis_title="Salário",
+        yaxis_title="Preço Médio Gasto por Cesta",
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
 def produtos_com_mais_cupons(df, top_n: int = 10):
     """
     Mostra os produtos onde se aplicam mais 'cupões',
     usando como proxy qualquer desconto (discount_value > 0),
-    e permite filtrar por loja.
+    e permite filtrar por departamento.
     """
     st.subheader("Top Produtos com Mais Cupões Aplicados")
 
     # ——— 1) Filtro por departamento ———
     departamentos = sorted(df["product_department"].astype(str).unique())
-    depatamento_selecionado = st.selectbox("Seleciona um Departamento:", ["Todos"] + departamentos)
-    if depatamento_selecionado != "Todos":
-        df = df[df["product_department"].astype(str) == depatamento_selecionado]
-
+    departamento_selecionado = st.selectbox("Seleciona um Departamento:", ["Todos"] + departamentos)
+    if departamento_selecionado != "Todos":
+        df = df[df["product_department"].astype(str) == departamento_selecionado]
 
     # ——— 2) Detecta coluna de cupões ou usa discount_value ———
     possíveis = [c for c in df.columns if any(x in c.lower() for x in ("coupon", "voucher"))]
@@ -451,7 +514,7 @@ def produtos_com_mais_cupons(df, top_n: int = 10):
         return
 
     if df_cupons.empty:
-        st.info("ℹ️ Não existem registos com cupões/descontos aplicados para esta loja.")
+        st.info("ℹ️ Não existem registos com cupões/descontos aplicados para este departamento.")
         return
 
     # ——— 3) Conta quantas aplicações por categoria de produto ———
