@@ -11,7 +11,6 @@ from scripts.functions import (
     # PADRÕES DE COMPRA
     depart_sales_num_bar,
     sales_evolution_by_store,
-    top_product_categories,
     top_selling_store,
     product_share_by_category,
     vendas_boxplot_promocao,
@@ -39,7 +38,7 @@ st.markdown("""
             font-size: 22px;
             font-weight: bold;
             border-radius: 8px;
-            background: linear-gradient(135deg, #1e1e80, #6a1b9a) !important;
+            background: linear-gradient(135deg, #006064, #26a69a) !important;
             color: white !important;
             box-shadow: 0 0 10px rgba(106, 27, 154, 0.3);
             transition: all 0.3s ease-in-out;
@@ -83,7 +82,7 @@ if st.session_state["tab"] == "clientes":
             "Clientes por Cidade",
             "Distribuição por Idade",
             "Distribuição por Salário",
-            "Com/sem Filhos",
+            "Com/Sem Filhos",
             "Nº Elementos por Família"
         ], format_func=lambda x: f"📊 {x}", label_visibility="collapsed")
 
@@ -101,7 +100,7 @@ if st.session_state["tab"] == "clientes":
             client_age_hist(df_clientes)
         elif selected == "Distribuição por Salário":
             client_salary_hist(df_clientes)
-        elif selected == "Com/sem Filhos":
+        elif selected == "Com/Sem Filhos":
             client_with_kids_or_not_pie(df_clientes)
         elif selected == "Nº Elementos por Família":
             client_fam_num_bar(df_clientes)
@@ -128,13 +127,13 @@ if st.session_state["tab"] == "clientes":
             .kpi-label {{
                 font-size: 16px;
                 font-weight: 500;
-                color: #ccc;
+                color: #00838F;
                 white-space: nowrap;
             }}
             .kpi-value {{
                 font-size: 26px;
                 font-weight: bold;
-                color: white;
+                color: #00838F;
             }}
         </style>
         <div class="kpi-container">
@@ -164,10 +163,9 @@ elif st.session_state["tab"] == "compras":
         st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
         selected = st.radio("", [
             "Evolução de Vendas",
-            "Vendas por Departamento",
             "Loja com Mais Vendas",
-            "Top Categorias Vendidas",
-            "Top por Departamento",
+            "Vendas por Departamento",
+            "Vendas das Categorias por Departamento",
             "Promoções: Loja 1"
         ], format_func=lambda x: f"📊 {x}", label_visibility="collapsed")
 
@@ -178,9 +176,7 @@ elif st.session_state["tab"] == "compras":
             depart_sales_num_bar(df)
         elif selected == "Loja com Mais Vendas":
             top_selling_store(df)
-        elif selected == "Top Categorias Vendidas":
-            top_product_categories(df)
-        elif selected == "Top por Departamento":
+        elif selected == "Vendas das Categorias por Departamento":
             product_share_by_category(df)
         elif selected == "Promoções: Loja 1":
             vendas_boxplot_promocao(df)
@@ -206,13 +202,13 @@ elif st.session_state["tab"] == "compras":
             .kpi-label {{
                 font-size: 16px;
                 font-weight: 500;
-                color: #ccc;
+                color: #00838F;
                 white-space: nowrap;
             }}
             .kpi-value {{
                 font-size: 26px;
                 font-weight: bold;
-                color: white;
+                color: #00838F;
             }}
         </style>
         <div class="kpi-container">

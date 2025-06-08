@@ -162,8 +162,18 @@ def depart_sales_num_bar(df):
     # Gráfico de Barras com o número de vendas por cada departamento
     st.subheader("Número de Vendas por Departamento")
 
-    departs_df = df['product_department'].value_counts().sort_values(ascending=False)
+    # Selectbox para escolher a loja
+    lojas = sorted(df["store_id"].astype(str).unique())
+    loja_selecionada = st.selectbox("Seleciona uma loja:", ["Todas"] + lojas)
 
+    # Aplicar filtro à loja, se necessário
+    if loja_selecionada != "Todas":
+        df = df[df["store_id"].astype(str) == loja_selecionada]
+
+    # Contar número de vendas por departamento
+    departs_df = df['product_department'].value_counts().sort_values(ascending=False)
+    
+    # Criar gráfico
     fig_depart = px.bar(
         x=departs_df.index,
         y=departs_df.values,
@@ -193,30 +203,35 @@ def sales_evolution_by_store(df):
 
     df['transaction_timestamp'] = pd.to_datetime(df['transaction_timestamp'])
 
-    # Obter lista de lojas únicas (ordenadas)
     lojas = sorted(df["store_id"].unique())
 
-    # SelectBox para escolher a loja
     loja_selecionada = st.selectbox("Seleciona uma loja:", ["Todas"] + lojas, index=1)
 
-    # Filtrar o DataFrame consoante a loja selecionada
     if loja_selecionada != "Todas":
         df = df[df["store_id"] == loja_selecionada]
-    
+
+    # Agrupar por dia e loja
     sales_by_day_store = (
         df.groupby([df['transaction_timestamp'].dt.date, 'store_id'])
         .size()
         .reset_index(name='num_sales')
+        .rename(columns={'transaction_timestamp': 'date'})
     )
+
+    # Definir cores: se for loja única, usar azul. Se forem todas, deixar o Plotly escolher.
+    if loja_selecionada == "Todas":
+        color_sequence = px.colors.qualitative.Set2  # várias cores
+    else:
+        color_sequence = ["#00838F"]  # só uma cor
 
     fig = px.line(
         sales_by_day_store,
-        x='transaction_timestamp',
+        x='date',
         y='num_sales',
         color='store_id',
         markers=True,
         title=' ',
-        color_discrete_sequence=["#00838F"],
+        color_discrete_sequence=color_sequence
     )
 
     fig.update_layout(
@@ -228,53 +243,6 @@ def sales_evolution_by_store(df):
 
     fig.update_traces(
         hovertemplate="Data: %{x}<br>Loja: %{fullData.name}<br>Vendas: %{y}"
-    )
-
-
-    st.plotly_chart(fig, use_container_width=True)
-
-def top_product_categories(df):
-#Gráfico de barras com as categorias de produto mais vendidas
-    st.subheader("Top Categorias de Produto Mais Vendidas")
-
-    # Obter listas únicas e ordenadas
-    lojas = sorted(df["store_id"].unique())
-    departamentos = sorted(df["product_department"].unique())
-
-    # SelectBoxes para filtrar
-    col1, col2 = st.columns(2)
-    with col1:
-        loja_selecionada = st.selectbox("Seleciona uma loja:", ["Todas"] + lojas)
-    with col2:
-        departamento_selecionado = st.selectbox("Seleciona um departamento:", ["Todos"] + departamentos, index=3)
-
-    # Aplicar filtros
-    if loja_selecionada != "Todas":
-        df = df[df["store_id"] == loja_selecionada]
-
-    if departamento_selecionado != "Todos":
-        df = df[df["product_department"] == departamento_selecionado]
-    
-    category_sales = (
-        df.groupby(['product_department', 'product_category'])
-        .size()
-        .reset_index(name='num_sales')
-        .sort_values('num_sales', ascending=False)
-    )
-
-    fig = px.bar(
-        category_sales,
-        x='product_category',
-        y='num_sales',
-        color='product_department',
-        title=' ',
-        labels={'num_sales': 'Número de Vendas', 'product_category': 'Categoria'},
-        color_discrete_sequence=px.colors.qualitative.Set3
-    )
-
-    fig.update_layout(
-        xaxis_tickangle=-45,
-        template='plotly_white'
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -333,18 +301,27 @@ def top_selling_store(df):
 
     st.plotly_chart(fig, use_container_width=True)
 
-
-
-
 def product_share_by_category(df):
+    # Gráfico de Barras Horizontal com as categorias de vendas por departamento
     st.subheader("Top Categorias de Vendas por Departamento")
 
-    # Selectbox para escolher o departamento
-    departamentos = sorted(df["product_department"].unique())
-    departamento_selecionado = st.selectbox("Seleciona um departamento:", departamentos)
+    # Criar duas colunas lado a lado
+    col1, col2 = st.columns(2)
 
-    # Filtrar dados
+    # Selectbox para loja na primeira coluna (com opção "Todas")
+    with col1:
+        lojas = sorted(df["store_id"].unique())
+        loja_selecionada = st.selectbox("Seleciona uma loja:", ["Todas"] + lojas)
+
+    # Selectbox para departamento na segunda coluna
+    with col2:
+        departamentos = sorted(df["product_department"].unique())
+        departamento_selecionado = st.selectbox("Seleciona um departamento:", departamentos)
+
+    # Filtrar dados por departamento (e por loja se necessário)
     df_filtrado = df[df["product_department"] == departamento_selecionado]
+    if loja_selecionada != "Todas":
+        df_filtrado = df_filtrado[df_filtrado["store_id"] == loja_selecionada]
 
     # Agrupar e contar vendas por categoria
     category_sales = (
@@ -354,15 +331,13 @@ def product_share_by_category(df):
         .sort_values("num_sales", ascending=False)
     )
 
-    # Manter apenas Top 10 (ou ajustar para outro valor)
+    # Manter apenas Top 10
     top_n = 10
-    outros_total = category_sales["num_sales"][top_n:].sum()
-
     top_categories = category_sales.head(top_n).copy()
 
     # Gráfico de barras horizontal
     fig = px.bar(
-        top_categories.sort_values("num_sales", ascending=True),  # ordem crescente para eixo Y
+        top_categories.sort_values("num_sales", ascending=True),
         x="num_sales",
         y="product_category",
         orientation="h",
@@ -370,7 +345,7 @@ def product_share_by_category(df):
         color="product_category",
         color_discrete_sequence=["#00838F"],
         labels={"num_sales": "Número de Vendas", "product_category": "Categoria"},
-        title=f"Top {top_n} Categorias de Vendas no Departamento '{departamento_selecionado}'"
+        title=f"Top {top_n} Categorias de Vendas | {'Todas as Lojas' if loja_selecionada == 'Todas' else f'Loja {loja_selecionada}'} · Departamento '{departamento_selecionado}'"
     )
 
     fig.update_traces(
@@ -387,9 +362,6 @@ def product_share_by_category(df):
     )
 
     st.plotly_chart(fig, use_container_width=True)
-
-
-
 
 def vendas_boxplot_promocao(df):
     st.subheader("Distribuição Diária das Vendas com e sem Promoções (Loja 1)")
@@ -431,7 +403,7 @@ def vendas_boxplot_promocao(df):
         x="Tipo de Dia",
         y="sales_value",
         color="Tipo de Dia",
-        title="Distribuição Diária das Vendas - Loja 1",
+        title=" ",
         color_discrete_sequence=["#00838F", "#F25C54"],
         points="all"
     )

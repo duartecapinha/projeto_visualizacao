@@ -22,15 +22,20 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("""
     🔹 **Perfil dos Clientes**
+    - Número de Clientes por Cidade
     - Idade dos Clientes
     - Salário dos Clientes
+    - Proporção de Clientes com e sem filhos
+    - Tamanho dos Agregados Familiares dos Clientes
     """)
 
 with col2:
     st.markdown("""
     🔸 **Padrões de Compra**
-    - Produtos mais comprados
-    - Categorias por departamento
+    - Evolução das Vendas ao Longo do Tempo
+    - Produtos mais comprados por Departamento e Categoria
+    - Lojas com mais vendas
+    - Análise de Promoções e Descontos
     """)
 
 st.markdown("---")
